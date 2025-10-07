@@ -4,7 +4,7 @@ import {
   GoogleLogin,
 } from '@react-oauth/google'
 import type { CredentialResponse } from '@react-oauth/google'
-import { createFileRoute, redirect } from '@tanstack/react-router';
+import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router';
 import axios from 'axios'
 
 export const Route = createFileRoute(
@@ -15,6 +15,7 @@ export const Route = createFileRoute(
 
 export function GoogleAuth() {
   const { googleAuth } = useAuth()
+  const navigate = useNavigate()
   const handleLoginSuccess = async (
     credentialResponse: CredentialResponse,
   ) => {
@@ -26,8 +27,32 @@ export function GoogleAuth() {
     }
 
     try {
-      googleAuth(googleToken)
-    } catch(error) {
+      await googleAuth(googleToken)
+      const params = new URLSearchParams(window.location.search)
+      const redirect_url = params.get('redirect')
+
+      if (redirect_url) {
+        try {
+          // normaliza e valida origem (protege contra open redirect)
+          const target = new URL(redirect_url, window.location.origin)
+          if (target.origin === window.location.origin) {
+            // navega cliente-side preservando search/hash
+            console.log("Navigate2?")
+            navigate({ to: target.pathname + target.search + target.hash })
+            return
+          }
+        } catch (e) {
+          // URL inválida => ignora e segue para dashboard
+          navigate({ to: '/dashboard' })
+        }
+      }
+
+      console.log("Navigate?")
+
+      // sem redirect válido, vai para o dashboard
+      navigate({ to: '/dashboard' })
+
+    } catch (error) {
       alert("Erro ao logar")
     }
   }
