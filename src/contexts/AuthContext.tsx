@@ -1,5 +1,5 @@
 import api from '@/lib/axios'
-import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY, saveTokenLocal, logout as logoutService } from '@/services/auth'
+import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY, saveTokenLocal, logout as logoutService, saveTokenSession, getToken } from '@/services/auth'
 import type { ResponseAdapter } from '@/types/api'
 import type { UserAuthenticateResponse } from '@/types/auth'
 import axios, { type AxiosResponse } from 'axios'
@@ -42,7 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Restore auth state on app load
   useEffect(() => {
     async function getUser() {
-      const token = localStorage.getItem(ACCESS_TOKEN_KEY)
+      const token = getToken(ACCESS_TOKEN_KEY)
       if (token) {
         setIsAuthenticated(true)
         setIsLoading(false)
@@ -53,6 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             ...response.data.data.attributes
           })
         } catch (err) {
+          console.log(err)
           logout()
         }
       } else {
@@ -73,19 +74,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   function persistLogin(response: AxiosResponse<UserAuthenticateResponse>, remember: boolean) {
-    const accessToken = response.data.data.token.access_token
-    const refreshToken = response.data.data.token.refresh_token
+    const accessToken = response.data.data.token.accessToken
+    const refreshToken = response.data.data.token.refreshToken
 
-    setUser({
-      id: response.data.data.id,
-      ...response.data.data.attributes
-    })
+    console.log(response.data.data)
+
     setIsAuthenticated(true)
     if (remember) {
       saveTokenLocal(ACCESS_TOKEN_KEY, accessToken)
       saveTokenLocal(REFRESH_TOKEN_KEY, refreshToken)
     } else {
-      saveTokenLocal(ACCESS_TOKEN_KEY, accessToken)
+      saveTokenSession(ACCESS_TOKEN_KEY, accessToken)
     }
   }
 

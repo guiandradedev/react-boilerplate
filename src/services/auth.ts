@@ -8,7 +8,7 @@ export const REFRESH_TOKEN_KEY = `${KEY}-refresh-token`;
 export const isAuthenticated = () => localStorage.getItem(ACCESS_TOKEN_KEY) !== null;
 
 // Pega o token do localStorage
-export const getToken = () => localStorage.getItem(ACCESS_TOKEN_KEY);
+export const getToken = (key: string) => retrieveTokenLocal(key) || retrieveTokenSession(key);
 
 export const saveTokenLocal = (key: string, token: string) => localStorage.setItem(key, token);
 export const saveTokenSession = (key: string, token: string) => sessionStorage.setItem(key, token);

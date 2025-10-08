@@ -68,6 +68,7 @@ function RouteComponent() {
       navigate({ to: '/dashboard' })
 
     } catch (error) {
+      console.log(error)
       alert("Erro ao logar")
     }
 
